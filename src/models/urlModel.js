@@ -28,4 +28,5 @@ async function incrementClickCount(shortCode) {
 module.exports = {
   saveUrl,
   findUrlByCode,
+  incrementClickCount,
 };
