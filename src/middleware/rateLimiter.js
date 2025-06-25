@@ -5,7 +5,6 @@ const MAX_REQUESTS = 30;
 
 const rateLimiter = async (req, res, next) => {
   const ip = req.ip;
-
   const key = `rate_limit:${ip}`;
   const now = Date.now();
 
@@ -14,7 +13,7 @@ const rateLimiter = async (req, res, next) => {
     if (data) {
       const requestLog = JSON.parse(data);
       const windowStart = now - WINDOW_SIZE_IN_SECONDS * 1000;
-      const recentRequests = requestLog.filter(timestamp => timestamp > windowStart);
+      const recentRequests = requestLog.filter(ts => ts > windowStart);
 
       if (recentRequests.length >= MAX_REQUESTS) {
         return res.status(429).json({ message: 'Çok fazla istek gönderdiniz. Lütfen bekleyin.' });
@@ -29,8 +28,7 @@ const rateLimiter = async (req, res, next) => {
     next();
   } catch (err) {
     console.warn('Rate limiter Redis hatası:', err);
-    // Graceful degradation (fail open)
-    next();
+    next(); // fallback
   }
 };
 

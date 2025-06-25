@@ -1,24 +1,22 @@
-const blacklistedDomains = [
-  'malicious.com',
-  'phishing-site.com',
-  'fakebank.net',
-  'dangerous.org',
-];
+const blacklist = ['phishing.com', 'malicious.com', 'spam.com'];
 
-const isValidUrl = (url) => {
-  const regex = /^(http|https):\/\/[^ "]+$/;
-  return regex.test(url);
-};
-
-const isSafeDomain = (url) => {
+function isValidUrl(url) {
   try {
-    const { hostname } = new URL(url);
-    const domain = hostname.replace('www.', '');
-    return !blacklistedDomains.includes(domain);
-  } catch (error) {
+    const parsed = new URL(url);
+    return ['http:', 'https:'].includes(parsed.protocol);
+  } catch {
     return false;
   }
-};
+}
+
+function isSafeDomain(url) {
+  try {
+    const hostname = new URL(url).hostname.replace('www.', '').toLowerCase();
+    return !blacklist.includes(hostname);
+  } catch {
+    return false;
+  }
+}
 
 module.exports = {
   isValidUrl,
