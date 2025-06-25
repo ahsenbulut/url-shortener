@@ -1,6 +1,6 @@
 const generateShortCode = require('../utils/shortCodeGenerator');
 const { saveUrl, findUrlByCode, incrementClickCount } = require('../models/urlModel');
-const { logClick } = require('../models/analyticsModel');
+const { logClick, getAnalyticsByUrlId } = require('../models/analyticsModel');
 const { isValidUrl, isSafeDomain } = require('../utils/urlValidator');
 const { setCache, getCache } = require('../utils/cache');
 
@@ -62,8 +62,8 @@ const redirectUrl = async (req, res) => {
         ip: req.ip,
         userAgent: req.get('User-Agent'),
         referer: req.get('Referer') || null,
-        country: 'Türkiye',  // Geçici
-        city: 'İstanbul',    // Geçici
+        country: 'Türkiye',
+        city: 'İstanbul',
       });
 
       return res.status(200).json({
@@ -105,7 +105,41 @@ const redirectUrl = async (req, res) => {
   }
 };
 
+// 📊 URL istatistikleri
+const getUrlStats = async (req, res) => {
+  const { shortCode } = req.params;
+
+  try {
+    const url = await findUrlByCode(shortCode);
+    if (!url) {
+      return res.status(404).json({ message: 'URL bulunamadı.' });
+    }
+
+    if (url.user_id !== req.user.id) {
+      return res.status(403).json({ message: 'Yetkisiz erişim.' });
+    }
+
+    const analytics = await getAnalyticsByUrlId(url.id);
+
+    return res.status(200).json({
+      url: {
+        original_url: url.original_url,
+        short_code: url.short_code,
+        created_at: url.created_at,
+        click_count: url.click_count,
+        expires_at: url.expires_at,
+        is_active: url.is_active
+      },
+      analytics
+    });
+  } catch (error) {
+    console.error('getUrlStats error:', error);
+    return res.status(500).json({ message: 'Sunucu hatası' });
+  }
+};
+
 module.exports = {
   shortenUrl,
   redirectUrl,
+  getUrlStats
 };
