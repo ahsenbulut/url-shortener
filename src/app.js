@@ -1,9 +1,12 @@
+console.log("💡 app.js yüklendi");
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
 const urlRoutes = require('./routes/urlRoutes');
+console.log("📦 urlRoutes import edildi");
 const analyticsRoutes = require('./routes/analyticsRoutes'); 
 
 const app = express();

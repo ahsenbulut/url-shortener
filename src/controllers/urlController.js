@@ -3,8 +3,9 @@ const { saveUrl, findUrlByCode, incrementClickCount } = require('../models/urlMo
 const { logClick, getAnalyticsByUrlId } = require('../models/analyticsModel');
 const { isValidUrl, isSafeDomain } = require('../utils/urlValidator');
 const { setCache, getCache } = require('../utils/cache');
+const QRCode = require('qrcode');
 
-// 🔒 URL oluşturma
+// 🔒 URL kısaltma
 const shortenUrl = async (req, res) => {
   const { originalUrl, customAlias } = req.body;
 
@@ -138,8 +139,22 @@ const getUrlStats = async (req, res) => {
   }
 };
 
+// 📷 QR Kod oluşturma
+const generateQrCode = async (req, res) => {
+  const { shortCode } = req.params;
+  const shortUrl = `${process.env.BASE_URL}/${shortCode}`;
+
+  try {
+    const qrDataUrl = await QRCode.toDataURL(shortUrl);
+    res.status(200).json({ qrCode: qrDataUrl });
+  } catch (err) {
+    res.status(500).json({ message: 'QR kodu oluşturulamadı.' });
+  }
+};
+
 module.exports = {
   shortenUrl,
   redirectUrl,
-  getUrlStats
+  getUrlStats,
+  generateQrCode
 };
