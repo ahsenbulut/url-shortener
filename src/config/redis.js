@@ -1,10 +1,16 @@
-const redis = require('redis');
-const client = redis.createClient();
+console.log("🔍 Redis bağlantısı hedefi: redis://redis:6379");
 
-client.on('error', (err) => {
-  console.error('Redis bağlantı hatası:', err);
+const { createClient } = require('redis');
+
+
+const redisClient = createClient({
+  url: 'redis://redis:6379'
 });
 
-client.connect();
+redisClient.on('error', (err) => {
+  console.error('❌ Redis bağlantı hatası:', err);
+});
 
-module.exports = client;
+redisClient.connect();
+
+module.exports = redisClient;

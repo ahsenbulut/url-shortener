@@ -8,6 +8,10 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 
 const app = express();
 
+const rateLimiter = require('./middleware/rateLimiter');
+app.use(rateLimiter); 
+
+
 // Middleware'ler
 app.use(cors());
 app.use(helmet());
