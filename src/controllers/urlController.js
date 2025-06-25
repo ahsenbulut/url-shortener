@@ -5,7 +5,7 @@ const { isValidUrl, isSafeDomain } = require('../utils/urlValidator');
 const { setCache, getCache } = require('../utils/cache');
 const QRCode = require('qrcode');
 
-// 🔒 URL kısaltma
+// 🔒 URL oluşturma
 const shortenUrl = async (req, res) => {
   const { originalUrl, customAlias } = req.body;
 
@@ -36,7 +36,7 @@ const shortenUrl = async (req, res) => {
     return res.status(201).json({
       originalUrl: newUrl.original_url,
       shortCode: newUrl.short_code,
-      shortLink: `http://localhost:5000/api/${newUrl.short_code}`,
+      shortLink: `${process.env.BASE_URL}/${newUrl.short_code}`,
     });
   } catch (error) {
     return res.status(500).json({ message: 'Sunucu hatası', error: error.message });
@@ -106,7 +106,7 @@ const redirectUrl = async (req, res) => {
   }
 };
 
-// 📊 URL istatistikleri
+// 📊 İstatistikler
 const getUrlStats = async (req, res) => {
   const { shortCode } = req.params;
 
@@ -134,12 +134,11 @@ const getUrlStats = async (req, res) => {
       analytics
     });
   } catch (error) {
-    console.error('getUrlStats error:', error);
     return res.status(500).json({ message: 'Sunucu hatası' });
   }
 };
 
-// 📷 QR Kod oluşturma
+// 📷 QR Kod
 const generateQrCode = async (req, res) => {
   const { shortCode } = req.params;
   const shortUrl = `${process.env.BASE_URL}/${shortCode}`;
@@ -152,9 +151,43 @@ const generateQrCode = async (req, res) => {
   }
 };
 
+// 📦 Bulk URL Shortening
+const bulkShortenUrls = async (req, res) => {
+  const { urls } = req.body;
+
+  if (!Array.isArray(urls) || urls.length === 0) {
+    return res.status(400).json({ message: 'Lütfen geçerli bir URL listesi gönderin.' });
+  }
+
+  const results = [];
+
+  for (const originalUrl of urls) {
+    try {
+      if (!isValidUrl(originalUrl)) {
+        results.push({ originalUrl, error: 'Geçersiz format' });
+        continue;
+      }
+
+      const shortCode = generateShortCode();
+      const newUrl = await saveUrl(originalUrl, shortCode);
+
+      results.push({
+        originalUrl,
+        shortCode,
+        shortLink: `${process.env.BASE_URL}/${shortCode}`
+      });
+    } catch (err) {
+      results.push({ originalUrl, error: 'İşlenemedi' });
+    }
+  }
+
+  return res.status(201).json({ results });
+};
+
 module.exports = {
   shortenUrl,
   redirectUrl,
   getUrlStats,
-  generateQrCode
+  generateQrCode,
+  bulkShortenUrls
 };

@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 
@@ -6,16 +5,20 @@ const {
   shortenUrl,
   redirectUrl,
   getUrlStats,
-  generateQrCode
+  generateQrCode,
+  bulkShortenUrls
 } = require('../controllers/urlController');
 
 const authMiddleware = require('../middleware/auth');
 
-// 🎯 QR Kod oluşturma
+// 📷 QR kod üret
 router.get('/qr/:shortCode', generateQrCode);
 
-// 🔗 Kısa link oluştur
+// 🔗 Tekli URL kısalt
 router.post('/shorten', shortenUrl);
+
+// 📦 Toplu URL kısalt
+router.post('/bulk', bulkShortenUrls);
 
 // 🚀 Yönlendirme
 router.get('/:shortCode', redirectUrl);
